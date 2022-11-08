@@ -1,6 +1,16 @@
 FROM osrf/ros:melodic-desktop-full
-ARG DEBIAN_FRONTEND=noninteractive
-RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list
+
+# 设置环境变量
+ENV DEBIAN_FRONTEND noninteractive
+
+# 用root用户安装依赖
+USER root 
+
+# 更换阿里云源，在国内可以加快速度
+RUN sed -i "s/security.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list && \
+    sed -i "s/archive.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list && \
+    sed -i "s/security-cdn.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list
+RUN  apt-get clean
 
 ### nvidia-container-runtime
 ENV NVIDIA_VISIBLE_DEVICES \
@@ -11,51 +21,40 @@ ENV NVIDIA_DRIVER_CAPABILITIES \
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
 
-RUN apt-get update \
-  && apt-get install -y lsb-release gnupg
+# 更新源，安装相应工具
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    gdb \
+    net-tools \
+    git \
+    vim \
+    wget \
+    curl \
+    zip \
+    unzip \
+    htop \
+    tmux 
 
-### install ros 
-# RUN sh -c '. /etc/lsb-release && echo "deb http://mirrors.tuna.tsinghua.edu.cn/ros/ubuntu/ `lsb_release -cs` main" > /etc/apt/sources.list.d/ros-latest.list'
-# RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+# 创建nx用户
+RUN adduser --disabled-password --gecos '' nx && \
+    adduser nx sudo && \
+    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# RUN apt-get update \
-#  && apt-get install -y ros-melodic-desktop-full \
-#  && apt-get install -y vim inputils-ping openssh-server \
-#  && echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc \
-#  && apt-get -y update --fix-missing \
-#  && apt-get clean \
-#  && rm -rf /var/lib/apt/lists/*
-
-
-### install basic tools
-USER root
-RUN apt-get update && \
-    apt-get install -y sudo && \
-    apt-get install -y wget git && \
-    apt-get install -y vim && \
-    apt-get install -y htop tmux && \
-    apt-get install -y zip unzip && \
-    apt-get install -y libjpeg-dev libtiff5-dev
-
-
-RUN adduser --disabled-password --gecos '' nx
-RUN adduser nx sudo
-RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
-
-### user
+# 为nx用户安装依赖
 USER nx
 WORKDIR /home/nx
 CMD /bin/bash
 
-### bashrc
+# bashrc
 RUN echo "" >> ~/bashrc.sh
 RUN echo "source ~/bashrc.sh" >> ~/.bashrc
 
-### tmux config
-RUN echo "set -g prefix C-x" >> ~/.tmux.conf
-RUN echo "unbind C-b" >> ~/.tmux.conf
-RUN echo "bind C-x send-prefix" >> ~/.tmux.conf
+# tmux config
+RUN echo "set -g prefix C-x" >> ~/.tmux.conf && \
+    echo "unbind C-b" >> ~/.tmux.conf && \
+    echo "bind C-x send-prefix" >> ~/.tmux.conf && \
+    echo "set -g mouse on" >> ~/.tmux.conf
 
 SHELL ["/bin/bash", "-c"]
 
@@ -75,23 +74,19 @@ RUN pip install numpy==1.20.2                       && \
     pip install matplotlib==3.3.4                   && \
     pip install seaborn==0.11.1                     && \
     pip install gym==0.18.0                         && \
-    pip install pygame==1.9.6                       && \
-    pip install networkx==2.5                       && \
-    pip install PyYAML==5.4.1                       && \
     pip install python-intervals==1.10.0.post1      && \
     pip install opencv-python==4.3.0.36             && \
     pip install open3d==0.8.0.0                     && \
     pip install tensorboardX==2.1                   && \
     pip install tensorboard==2.4.1                  && \
-    pip install psutil==5.8.0                       && \
-    pip install pynvml==8.0.4                       && \
-    pip install Shapely==1.7.1                      && \
-    pip install termcolor==1.1.0                    && \
-    pip install memory-profiler==0.60.0
+    pip install psutil==5.8.0                       
 
-### torch
+# 安装pytorch
 RUN cd ~/opt && \
     wget https://download.pytorch.org/whl/cu111/torch-1.9.1%2Bcu111-cp37-cp37m-linux_x86_64.whl && \
     wget https://download.pytorch.org/whl/cu111/torchvision-0.10.1%2Bcu111-cp37-cp37m-linux_x86_64.whl && \
     pip install torch-1.9.1+cu111-cp37-cp37m-linux_x86_64.whl && \
     pip install torchvision-0.10.1+cu111-cp37-cp37m-linux_x86_64.whl
+
+# 删除apt/lists，可以减少最终镜像大小
+RUN rm -rf /var/lib/apt/lists/*
