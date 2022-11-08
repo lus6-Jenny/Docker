@@ -1,5 +1,5 @@
-# 配置多机SLAM的docker镜像
-Docker tutorial for ros+cuda+python3 
+# Docker配置ros+cuda+pytorch镜像
+Docker tutorial for ros+cuda+pytorch 
 
 ## 1. 在本机上安装Ubuntu18.04的系统
 

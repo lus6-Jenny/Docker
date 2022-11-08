@@ -12,25 +12,26 @@ USER root
 RUN sed -i "s/security.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list && \
     sed -i "s/archive.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list && \
     sed -i "s/security-cdn.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list
-RUN apt-get clean
+# RUN apt-get clean
 
-# cuda GPG key
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+# GPG key (cuda & machine-learning)
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub \
+    && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
 
 # 安装ros-melodic-desktop-full
-RUN apt-get update && apt-get install -y lsb-release gnupg
+RUN apt-get update && apt-get install -y lsb-release gnupg2
 
+# RUN RUN sh -c '. /etc/lsb-release && echo "deb http://mirrors.tuna.tsinghua.edu.cn/ros/ubuntu/ `lsb_release -cs` main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 
 RUN apt-get update \
- && apt-get install -y ros-melodic-desktop-full \
- && apt-get install -y python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential \
- && echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc \
- && apt-get -y update --fix-missing \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y ros-melodic-desktop-full \
+    && apt-get install -y python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential \
+    && echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc \
+    && apt-get -y update --fix-missing \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # 更新源，安装相应工具
 RUN apt-get update && apt-get install -y \
@@ -82,16 +83,15 @@ ENV PATH=~/miniconda3/bin:$PATH
 
 SHELL ["/bin/bash", "--login", "-c"]
 
-# 创建conda环境
-RUN conda create -n rospy3 python=3.7 -y && \
-    conda activate rospy3                && \
-    pip install empy                     && \
+# 安装依赖
+RUN pip install empy                     && \
     pip install numpy                    && \
     pip install scipy                    && \    
     pip install pyyaml                   && \
     pip install catkin_pkg               && \
     pip install rospkg                   && \
     pip install pybind11                 && \
+    pip install setuptools               && \
     pip install scikit-learn             && \
     pip install matplotlib               && \
     pip install cython                   && \
@@ -105,5 +105,7 @@ RUN cd ~/opt && \
     pip install torch-1.9.1+cu111-cp37-cp37m-linux_x86_64.whl && \
     pip install torchvision-0.10.1+cu111-cp37-cp37m-linux_x86_64.whl
 
-# 删除apt/lists，可以减少最终镜像大小
-RUN rm -rf /var/lib/apt/lists/*
+# 清除缓存，减小镜像体积
+RUN apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/apt/archives/*
