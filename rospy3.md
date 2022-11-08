@@ -14,12 +14,12 @@ chmod +x Miniconda3-latest-Linux-x86_64.sh
 conda create -n rospy3 python=3.7 -y
 conda activate rospy3
 conda install -c anaconda make
-pip install catkin_pkg
-pip install rospkg
 pip install empy
 pip install numpy
 pip install scipy
 pip install pyyaml
+pip install catkin_pkg
+pip install rospkg
 ```
 
 ## 3. 安装sip

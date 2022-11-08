@@ -1,12 +1,12 @@
 # 配置多机SLAM的docker镜像
 Docker tutorial for ros+cuda+python3 
 
-## 1. 在本机上安装ubuntu18.04的系统
+## 1. 在本机上安装Ubuntu18.04的系统
 
-## 2. 在本机上安装cuda和cudnn
+## 2. 在本机上安装Nvidia Driver,Cuda和Cudnn
 [安装教程](https://blog.csdn.net/i6101206007/article/details/113179852)
 
-## 3. 在本机上安装docker
+## 3. 在本机上安装Docker
 ```shell
 # 在Ubuntu系统安装docker
 cat <<"EOF" | bash                              
@@ -22,18 +22,32 @@ EOF
 sudo systemctl status docker 
 ```
 
-## 4. 在本机上安装nvidia-docker2
+## 4. 在本机上安装NVIDIA Container Toolkit
 ```sh
 distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
    && curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - \
    && curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 
+# 安装nvidia-docker2
 sudo apt-get update
 sudo apt-get install -y nvidia-docker2
+
+# 重启docker
 sudo systemctl restart docker
 
-# 验证nvidia-docker2是否安装成功
+# 测试是否安装成功
 docker run --rm --gpus all nvidia/cuda:11.3.0-base nvidia-smi
 ```
 
-## 5. 
+## 5. 从dockerhub上下载镜像
+```sh
+# 下载镜像
+docker pull nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu18.04
+```
+
+## 6. 制作镜像
+```sh
+# 写入Dockerfile
+# 制作镜像
+docker build -f center.Dockerfile -t center:latest .
+```

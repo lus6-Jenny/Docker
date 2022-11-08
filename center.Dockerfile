@@ -1,7 +1,9 @@
-FROM osrf/ros:melodic-desktop-full
+FROM nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu18.04
 
 # 设置环境变量
 ENV DEBIAN_FRONTEND noninteractive
+ENV NVIDIA_VISIBLE_DEVICES ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics,compat32,utility,display
 
 # 用root用户安装依赖
 USER root 
@@ -10,30 +12,40 @@ USER root
 RUN sed -i "s/security.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list && \
     sed -i "s/archive.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list && \
     sed -i "s/security-cdn.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list
-RUN  apt-get clean
+RUN apt-get clean
 
-### nvidia-container-runtime
-ENV NVIDIA_VISIBLE_DEVICES \
-    ${NVIDIA_VISIBLE_DEVICES:-all}
-ENV NVIDIA_DRIVER_CAPABILITIES \
-    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
-
+# cuda GPG key
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+
+# 安装ros-melodic-desktop-full
+RUN apt-get update && apt-get install -y lsb-release gnupg
+
+RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
+RUN apt-get update \
+ && apt-get install -y ros-melodic-desktop-full \
+ && apt-get install -y python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential \
+ && echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc \
+ && apt-get -y update --fix-missing \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 # 更新源，安装相应工具
 RUN apt-get update && apt-get install -y \
     build-essential \
-    cmake \
-    gdb \
+    openssh-server \
     net-tools \
-    git \
+    cmake \
     vim \
+    git \
     wget \
     curl \
     zip \
     unzip \
     htop \
+    dbus \
     tmux 
 
 # 创建nx用户
@@ -58,6 +70,7 @@ RUN echo "set -g prefix C-x" >> ~/.tmux.conf && \
 
 SHELL ["/bin/bash", "-c"]
 
+# 安装miniconda
 RUN mkdir opt && cd opt && \
     wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.sh && \
     # chmod +x Miniconda3-py37_4.8.3-Linux-x86_64.sh && \
@@ -69,17 +82,21 @@ ENV PATH=~/miniconda3/bin:$PATH
 
 SHELL ["/bin/bash", "--login", "-c"]
 
-RUN pip install numpy==1.20.2                       && \
-    pip install scipy==1.6.1                        && \
-    pip install matplotlib==3.3.4                   && \
-    pip install seaborn==0.11.1                     && \
-    pip install gym==0.18.0                         && \
-    pip install python-intervals==1.10.0.post1      && \
-    pip install opencv-python==4.3.0.36             && \
-    pip install open3d==0.8.0.0                     && \
-    pip install tensorboardX==2.1                   && \
-    pip install tensorboard==2.4.1                  && \
-    pip install psutil==5.8.0                       
+# 创建conda环境
+RUN conda create -n rospy3 python=3.7 -y && \
+    conda activate rospy3                && \
+    pip install empy                     && \
+    pip install numpy                    && \
+    pip install scipy                    && \    
+    pip install pyyaml                   && \
+    pip install catkin_pkg               && \
+    pip install rospkg                   && \
+    pip install pybind11                 && \
+    pip install scikit-learn             && \
+    pip install matplotlib               && \
+    pip install cython                   && \
+    pip install opencv-python            && \
+    pip install open3d                      
 
 # 安装pytorch
 RUN cd ~/opt && \
