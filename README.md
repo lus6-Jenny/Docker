@@ -3,7 +3,7 @@ Docker tutorial for ros+cuda+pytorch
 
 ## 1. 在本机上安装Ubuntu18.04的系统
 
-## 2. 在本机上安装Nvidia Driver,Cuda和Cudnn
+## 2. 在本机上安装NVIDIA Driver, Cuda和Cudnn
 [安装教程](https://blog.csdn.net/i6101206007/article/details/113179852)
 
 ## 3. 在本机上安装Docker
@@ -47,7 +47,38 @@ docker pull nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu18.04
 
 ## 6. 制作镜像
 ```sh
-# 写入Dockerfile
-# 制作镜像
-docker build -f center.Dockerfile -t center:latest .
+# 使用Dockerfile制作镜像
+docker build -f center.Dockerfile -t center:0.0.1 .
+```
+
+## 7. 运行镜像
+```sh
+# 运行镜像
+docker run -it --rm --gpus all --net=host --name center center:0.0.1 
+# 进入容器
+docker exec -it center bash
+```
+
+## 8. 保存镜像
+```sh
+# 保存镜像
+docker save -o center.tar center:0.0.1
+# 上传镜像到dockerhub
+docker login
+docker tag center:0.0.1 lusha/center:0.0.1
+docker push lusha/center:0.0.1
+# 传输镜像
+scp center.tar
+# 加载镜像
+docker load -i center.tar
+# 下载镜像
+docker pull lusha/center:0.0.1
+```
+
+## 9. docker设置ip
+```sh
+# 查看docker0的ip
+ifconfig docker0
+# 设置docker0的ip
+sudo ifconfig docker0
 ```

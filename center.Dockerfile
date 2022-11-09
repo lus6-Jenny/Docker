@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu18.04
+FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu18.04
 
 # 设置环境变量
 ENV DEBIAN_FRONTEND noninteractive
@@ -15,8 +15,8 @@ RUN sed -i "s/security.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list && 
 # RUN apt-get clean
 
 # GPG key (cuda & machine-learning)
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub \
-    && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
 
 # 安装ros-melodic-desktop-full
 RUN apt-get update && apt-get install -y lsb-release gnupg2
@@ -25,13 +25,13 @@ RUN apt-get update && apt-get install -y lsb-release gnupg2
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 
-RUN apt-get update \
-    && apt-get install -y ros-melodic-desktop-full \
-    && apt-get install -y python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential \
-    && echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc \
-    && apt-get -y update --fix-missing \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y ros-melodic-desktop-full && \
+    apt-get install -y python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential && \
+    echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc && \
+    apt-get -y update --fix-missing && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # 更新源，安装相应工具
 RUN apt-get update && apt-get install -y \
@@ -49,6 +49,8 @@ RUN apt-get update && apt-get install -y \
     dbus \
     tmux 
 
+# 配置kindr
+
 # 创建nx用户
 RUN adduser --disabled-password --gecos '' nx && \
     adduser nx sudo && \
@@ -61,7 +63,10 @@ CMD /bin/bash
 
 # bashrc
 RUN echo "" >> ~/bashrc.sh
-RUN echo "source ~/bashrc.sh" >> ~/.bashrc
+RUN echo "source ~/bashrc.sh" >> ~/.bashrc && \
+    echo "alias condaa = 'conda activate'" >> ~/.bashrc && \
+    echo "alias condad = 'conda deactivate'" >> ~/.bashrc && \
+    echo "alias sdb = 'source devel/setup.bash'" >> ~/.bashrc
 
 # tmux config
 RUN echo "set -g prefix C-x" >> ~/.tmux.conf && \
@@ -82,6 +87,10 @@ RUN mkdir opt && cd opt && \
 ENV PATH=~/miniconda3/bin:$PATH
 
 SHELL ["/bin/bash", "--login", "-c"]
+
+# pip更换阿里云源
+RUN pip config set global.index-url https://aliyun.pypi.org/simple && \
+    pip config set install.trusted-host aliyun.pypi.org
 
 # 安装依赖
 RUN pip install empy                     && \
@@ -106,6 +115,6 @@ RUN cd ~/opt && \
     pip install torchvision-0.10.1+cu111-cp37-cp37m-linux_x86_64.whl
 
 # 清除缓存，减小镜像体积
-RUN apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /var/cache/apt/archives/*
+# RUN apt-get autoremove -y \
+#     && rm -rf /var/lib/apt/lists/* \
+#     && rm -rf /var/cache/apt/archives/*
