@@ -65,11 +65,19 @@ WORKDIR /home/nx
 CMD /bin/bash
 
 # bashrc
-RUN echo "" >> ~/bashrc.sh
-RUN echo "source ~/bashrc.sh" >> ~/.bashrc && \
-    echo "alias condaa = 'conda activate'" >> ~/.bashrc && \
-    echo "alias condad = 'conda deactivate'" >> ~/.bashrc && \
-    echo "alias sdb = 'source devel/setup.bash'" >> ~/.bashrc
+RUN echo "alias condaa='conda activate'" >> ~/.bashrc && \
+    echo "alias condad='conda deactivate'" >> ~/.bashrc && \
+    echo "alias sdb='source devel/setup.bash'" >> ~/.bashrc && \
+    echo "" >> ~/bashrc.sh && \
+    # echo "export ROS_MASTER_URI=http://localhost:11311" >> ~/bashrc.sh && \
+    # echo "export ROS_HOSTNAME=localhost" >> ~/bashrc.sh && \
+    # echo "export ROS_IP=localhost" >> ~/bashrc.sh && \
+    # echo "export ROSLAUNCH_SSH_UNKNOWN=1" >> ~/bashrc.sh && \
+    # echo "export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:/home/nx/catkin_ws/src" >> ~/bashrc.sh && \
+    # echo "export ROS_WORKSPACE=/home/nx/catkin_ws" >> ~/bashrc.sh && \
+    # echo "export ROS_PYTHON_VERSION=3" >> ~/bashrc.sh && \
+    # echo "export PYTHONPATH=$PYTHONPATH:/home/nx/catkin_ws/devel/lib/python3/dist-packages" >> ~/bashrc.sh && \
+    echo "source ~/bashrc.sh" >> ~/.bashrc
 
 # tmux config
 RUN echo "set -g prefix C-x" >> ~/.tmux.conf && \
