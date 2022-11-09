@@ -1,5 +1,5 @@
-# 在cuda基础镜像里面安装ros和pytorch
-FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu18.04
+# 在pytorch基础镜像里面安装ros
+FROM pytorch/pytorch:1.12.1-cuda11.3-cudnn8-runtime
 
 # 设置环境变量
 ENV DEBIAN_FRONTEND noninteractive
@@ -79,18 +79,6 @@ RUN echo "set -g prefix C-x" >> ~/.tmux.conf && \
 
 SHELL ["/bin/bash", "-c"]
 
-# 安装miniconda
-RUN mkdir opt && cd opt && \
-    wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.sh && \
-    # chmod +x Miniconda3-py37_4.8.3-Linux-x86_64.sh && \
-    sh Miniconda3-py37_4.8.3-Linux-x86_64.sh -b && \
-    ~/miniconda3/bin/conda init && \
-    source ~/.bashrc 
-
-ENV PATH=~/miniconda3/bin:$PATH
-
-SHELL ["/bin/bash", "--login", "-c"]
-
 # 解决pip安装超时问题
 # · pip --default-timeout=1000 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 # · pip更换阿里云源
@@ -111,10 +99,3 @@ RUN pip install empy                     && \
     pip install cython                   && \
     pip install opencv-python            && \
     pip install open3d                      
-
-# 安装pytorch
-RUN cd ~/opt && \
-    wget https://download.pytorch.org/whl/cu111/torch-1.9.1%2Bcu111-cp37-cp37m-linux_x86_64.whl && \
-    wget https://download.pytorch.org/whl/cu111/torchvision-0.10.1%2Bcu111-cp37-cp37m-linux_x86_64.whl && \
-    pip install torch-1.9.1+cu111-cp37-cp37m-linux_x86_64.whl && \
-    pip install torchvision-0.10.1+cu111-cp37-cp37m-linux_x86_64.whl

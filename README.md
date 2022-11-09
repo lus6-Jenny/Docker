@@ -55,6 +55,8 @@ docker build -f center.Dockerfile -t center:0.0.1 .
 ```sh
 # 运行镜像
 docker run -it --rm --gpus all --net=host --name center center:0.0.1 
+# 映射本机的文件夹到容器中
+docker run -it --gpus all --net=host --name center -v MR_SLAM:/home/nx/MR_SLAM center:0.0.1 
 # 进入容器
 docker exec -it center bash
 ```
