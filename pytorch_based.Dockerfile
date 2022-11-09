@@ -34,6 +34,11 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# 添加alias 
+RUN echo "alias condaa='conda activate'" >> ~/.bashrc && \
+    echo "alias condad='conda deactivate'" >> ~/.bashrc && \
+    echo "alias sdb='source devel/setup.bash'" >> ~/.bashrc
+
 # 更新源，安装相应工具
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -65,10 +70,7 @@ WORKDIR /home/nx
 CMD /bin/bash
 
 # bashrc
-RUN echo "alias condaa='conda activate'" >> ~/.bashrc && \
-    echo "alias condad='conda deactivate'" >> ~/.bashrc && \
-    echo "alias sdb='source devel/setup.bash'" >> ~/.bashrc && \
-    echo "" >> ~/bashrc.sh && \
+RUN echo "" >> ~/bashrc.sh && \
     # echo "export ROS_MASTER_URI=http://localhost:11311" >> ~/bashrc.sh && \
     # echo "export ROS_HOSTNAME=localhost" >> ~/bashrc.sh && \
     # echo "export ROS_IP=localhost" >> ~/bashrc.sh && \
@@ -97,7 +99,8 @@ RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
 RUN pip install empy                     && \
     pip install numpy                    && \
     pip install scipy                    && \    
-    pip install pyyaml                   && \
+    pip install astropy                  && \
+    pip install extension_helpers        && \
     pip install catkin_pkg               && \
     pip install rospkg                   && \
     pip install pybind11                 && \

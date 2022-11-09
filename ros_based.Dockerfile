@@ -19,6 +19,11 @@ RUN sed -i "s/security.ubuntu.com/mirrors.aliyun.com/" /etc/apt/sources.list && 
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
 
+# 添加alias 
+RUN echo "alias condaa='conda activate'" >> ~/.bashrc && \
+    echo "alias condad='conda deactivate'" >> ~/.bashrc && \
+    echo "alias sdb='source devel/setup.bash'" >> ~/.bashrc
+
 # 更新源，安装相应工具
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -49,10 +54,7 @@ WORKDIR /home/nx
 CMD /bin/bash
 
 # bashrc
-RUN echo "alias condaa='conda activate'" >> ~/.bashrc && \
-    echo "alias condad='conda deactivate'" >> ~/.bashrc && \
-    echo "alias sdb='source devel/setup.bash'" >> ~/.bashrc && \
-    echo "" >> ~/bashrc.sh && \
+RUN echo "" >> ~/bashrc.sh && \
     # echo "export ROS_MASTER_URI=http://localhost:11311" >> ~/bashrc.sh && \
     # echo "export ROS_HOSTNAME=localhost" >> ~/bashrc.sh && \
     # echo "export ROS_IP=localhost" >> ~/bashrc.sh && \
