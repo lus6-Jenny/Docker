@@ -50,6 +50,9 @@ RUN apt-get update && apt-get install -y \
     tmux 
 
 # 配置kindr
+RUN apt-get install -y libeigen3-dev && \
+    cd /root && \
+    git clone 
 
 # 创建nx用户
 RUN adduser --disabled-password --gecos '' nx && \
@@ -89,10 +92,10 @@ ENV PATH=~/miniconda3/bin:$PATH
 SHELL ["/bin/bash", "--login", "-c"]
 
 # pip更换阿里云源
-RUN pip config set global.index-url https://aliyun.pypi.org/simple && \
-    pip config set install.trusted-host aliyun.pypi.org
+RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
+    pip config set install.trusted-host mirrors.aliyun.com
 
-# 安装依赖
+# 安装依赖 pip --default-timeout=1000 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 RUN pip install empy                     && \
     pip install numpy                    && \
     pip install scipy                    && \    
