@@ -102,3 +102,6 @@ RUN cd ~/opt && \
     wget https://download.pytorch.org/whl/cu111/torchvision-0.10.1%2Bcu111-cp37-cp37m-linux_x86_64.whl && \
     pip install torch-1.9.1+cu111-cp37-cp37m-linux_x86_64.whl && \
     pip install torchvision-0.10.1+cu111-cp37-cp37m-linux_x86_64.whl
+
+# 删除安装包
+RUN rm -rf ~/opt
