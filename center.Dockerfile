@@ -91,11 +91,13 @@ ENV PATH=~/miniconda3/bin:$PATH
 
 SHELL ["/bin/bash", "--login", "-c"]
 
-# pip更换阿里云源
+# 解决pip安装超时问题
+# · pip --default-timeout=1000 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+# · pip更换阿里云源
 RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
     pip config set install.trusted-host mirrors.aliyun.com
 
-# 安装依赖 pip --default-timeout=1000 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+# 安装依赖 
 RUN pip install empy                     && \
     pip install numpy                    && \
     pip install scipy                    && \    
